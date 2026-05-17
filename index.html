@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AccuProcess Pro | Secure Enterprise Accounting</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- User Authentication Overlay -->
+    <div id="userAuthOverlay" class="auth-overlay">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="logo-large">
+                    <span class="logo-icon"><i class="fas fa-shield-halved"></i></span>
+                    <span class="logo-text">AccuProcess <span class="text-accent">Pro</span></span>
+                </div>
+                <h2 id="authTitle">User Login</h2>
+                <p id="authSubtitle">Access your financial workspace</p>
+            </div>
+
+            <!-- Login Form -->
+            <form id="loginForm">
+                <div class="form-group">
+                    <label><i class="fas fa-user-tie"></i> Username</label>
+                    <input type="text" id="loginUsername" placeholder="Enter username" required>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-lock"></i> Password</label>
+                    <input type="password" id="loginPassword" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn-primary btn-block">Sign In</button>
+                <p class="auth-toggle">New user? <a href="#" id="toSignup">Create an account</a></p>
+            </form>
+
+            <!-- Signup Form -->
+            <form id="signupForm" class="hidden">
+                <div class="form-group">
+                    <label><i class="fas fa-user-plus"></i> Full Name</label>
+                    <input type="text" id="signupName" placeholder="John Doe" required>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-user-circle"></i> Choose Username</label>
+                    <input type="text" id="signupUsername" placeholder="johndoe123" required>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-key"></i> Create Password</label>
+                    <input type="password" id="signupPassword" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn-primary btn-block">Register Account</button>
+                <p class="auth-toggle">Existing user? <a href="#" id="toLogin">Back to login</a></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Company Selection Overlay -->
+    <div id="companyOverlay" class="auth-overlay" style="display: none;">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="logo-large">
+                    <span class="logo-icon"><i class="fas fa-building"></i></span>
+                    <span class="logo-text">Enterprise <span class="text-accent">Manager</span></span>
+                </div>
+                <p>Logged in as <b id="loggedInUserDisplay"></b></p>
+                <div style="margin-top: 10px;">
+                    <button class="btn-secondary" style="padding: 4px 10px; font-size: 0.7rem;" id="logoutUserBtn">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
+            </div>
+
+            <div id="companySelectionView">
+                <div id="companyList" class="company-list-container">
+                    <!-- Dynamic List -->
+                </div>
+                <div class="divider"><span>OR</span></div>
+                <button id="showCreateBtn" class="btn-primary btn-block">
+                    <i class="fas fa-plus"></i> Create Enterprise Profile
+                </button>
+            </div>
+
+            <form id="createCompanyForm" class="hidden">
+                <div class="form-group">
+                    <label><i class="fas fa-signature"></i> Organization Name</label>
+                    <input type="text" id="newCompanyName" placeholder="Acme Corporation" required>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-calendar-days"></i> Financial Year</label>
+                    <select id="newCompanyFY">
+                        <option value="2023-24">2023-24</option>
+                        <option value="2024-25" selected>2024-25</option>
+                        <option value="2025-26">2025-26</option>
+                    </select>
+                </div>
+                <div style="display:flex; gap:1rem;">
+                    <button type="button" id="backToSelectBtn" class="btn-secondary" style="flex:1">Cancel</button>
+                    <button type="submit" class="btn-primary" style="flex:1">Initialize</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main App Layout -->
+    <div class="app-container" style="display: none;" id="mainApp">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <span class="logo-icon"><i class="fas fa-chart-pie"></i></span>
+                    <span class="logo-text">Accounts Master <span class="text-accent">Pro</span></span>
+                </div>
+                <div class="company-display" id="companyDisplayTrigger" title="Switch Company">
+                    <div id="currentCompany" class="company-name">Acme Corp</div>
+                    <div id="currentFY" class="company-fy">FY 2024-25</div>
+                    <div style="font-size: 0.6rem; color: var(--primary); margin-top: 5px;"><i
+                            class="fas fa-exchange-alt"></i> Switch Enterprise</div>
+                </div>
+            </div>
+
+            <nav class="nav-menu">
+                <div class="nav-section">Performance</div>
+                <button class="nav-item active" data-tab="dashboard">
+                    <span class="nav-icon"><i class="fas fa-th-large"></i></span> Dashboard
+                </button>
+
+                <div class="nav-section">Data Entry</div>
+                <button class="nav-item" data-tab="input">
+                    <span class="nav-icon"><i class="fas fa-edit"></i></span> Vouchers
+                </button>
+
+                <div class="nav-section">Accounting Books</div>
+                <button class="nav-item" data-tab="journal">
+                    <span class="nav-icon"><i class="fas fa-book"></i></span> Day Book
+                </button>
+                <button class="nav-item" data-tab="ledger">
+                    <span class="nav-icon"><i class="fas fa-folder-open"></i></span> Ledger Portfolios
+                </button>
+
+                <div class="nav-section">Financial Audits</div>
+                <button class="nav-item" data-tab="trial">
+                    <span class="nav-icon"><i class="fas fa-balance-scale"></i></span> Trial Balance
+                </button>
+                <button class="nav-item" data-tab="final">
+                    <span class="nav-icon"><i class="fas fa-file-invoice"></i></span> Final Statements
+                </button>
+
+                <div class="nav-section">Account</div>
+                <button class="nav-item" data-tab="settings">
+                    <span class="nav-icon"><i class="fas fa-user-cog"></i></span> Managed Settings
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">AA</div>
+                    <div class="user-details">
+                        <div class="user-name" id="sidebarUserName">User</div>
+                        <div class="user-role">Administrator</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="page-title-group">
+                    <h1 id="pageTitle">Dashboard</h1>
+                    <p id="pageSubtitle" class="text-muted">High-level financial diagnostics.</p>
+                </div>
+                <div class="top-bar-actions">
+                    <div class="currency-badge">
+                        <i class="fas fa-indian-rupee-sign"></i> <span>INR</span>
+                    </div>
+                    <button class="btn-primary" onclick="window.switchTab('input')">
+                        <i class="fas fa-plus"></i> New Voucher
+                    </button>
+                </div>
+            </header>
+
+            <!-- Dashboard -->
+            <section id="dashboard-tab" class="tab-pane active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-title">Total Inflow</span>
+                            <span class="stat-icon icon-green"><i class="fas fa-arrow-up"></i></span>
+                        </div>
+                        <div class="stat-value" id="statRevenue">₹0.00</div>
+                        <div class="stat-meta">Trading Revenue</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-title">Total Outflow</span>
+                            <span class="stat-icon icon-red"><i class="fas fa-arrow-down"></i></span>
+                        </div>
+                        <div class="stat-value" id="statExpenses">₹0.00</div>
+                        <div class="stat-meta">Accumulated Costs</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-title">Net Performance</span>
+                            <span class="stat-icon icon-blue"><i class="fas fa-sack-dollar"></i></span>
+                        </div>
+                        <div class="stat-value" id="statProfit">₹0.00</div>
+                        <div class="stat-meta" id="statProfitMeta">Current Surplus</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-title">Liquidity Position</span>
+                            <span class="stat-icon icon-yellow"><i class="fas fa-university"></i></span>
+                        </div>
+                        <div class="stat-value" id="statCash">₹0.00</div>
+                        <div class="stat-meta">Cash/Bank Balance</div>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-container card">
+                        <h3><i class="fas fa-chart-line text-accent"></i> Cash Flow Analytics</h3>
+                        <div style="height: 300px; position: relative;">
+                            <canvas id="incomeExpChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-container card">
+                        <h3><i class="fas fa-chart-pie text-accent"></i> Capital Allocation</h3>
+                        <div style="height: 300px; position: relative;">
+                            <canvas id="assetLiabChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Vouchers Section -->
+            <section id="input-tab" class="tab-pane">
+                <div class="card">
+                    <h3><i class="fas fa-keyboard text-accent"></i> Smart Voucher Processor</h3>
+                    <p class="description">Input business actions in narrative text to generate automated double-entry
+                        postings.</p>
+                    <div class="transaction-input-group" style="max-width: 800px; margin-top: 1.5rem;">
+                        <textarea id="transactionInput" placeholder="Enter transactions here..."></textarea>
+                        <div class="input-footer">
+                            <span class="input-tip">Format: [Action] [Value]. Ledger detection is automated.</span>
+                            <button id="processBtn" class="btn-primary">Post Vouchers</button>
+                        </div>
+                    </div>
+                    <div id="engineLogs" style="margin-top: 2rem;"></div>
+                </div>
+            </section>
+
+            <!-- Day Book -->
+            <section id="journal-tab" class="tab-pane">
+                <div class="card">
+                    <div class="card-header"
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <h3>Day Book</h3>
+                        <div class="actions">
+                            <button class="btn-secondary" onclick="exportToExcel('journalTable')">Export CSV</button>
+                            <button class="btn-primary" onclick="window.print()">Print PDF</button>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table class="modern-table" id="journalTable">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Particulars</th>
+                                    <th class="text-right">Debit (₹)</th>
+                                    <th class="text-right">Credit (₹)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="journalBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Ledgers -->
+            <section id="ledger-tab" class="tab-pane">
+                <div class="ledger-layout">
+                    <aside class="card" style="padding: 1.5rem;">
+                        <h3>Account List</h3>
+                        <select id="ledgerSelect" style="width: 100%; margin-top: 1rem;"></select>
+                        <div id="ledgerAccountList" style="margin-top: 1.5rem;"></div>
+                    </aside>
+                    <div id="ledgerDetails">
+                        <div class="card" style="text-align: center; padding: 5rem 2rem; color: var(--text-muted);">
+                            <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 1.5rem; opacity: 0.2;"></i>
+                            <p>Select a ledger to view transaction history.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Trial Balance -->
+            <section id="trial-tab" class="tab-pane">
+                <div class="card">
+                    <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+                        <h3>Trial Balance</h3>
+                        <div id="trialStatus"></div>
+                    </div>
+                    <div class="table-container" style="margin-top: 2rem;">
+                        <table class="modern-table">
+                            <thead>
+                                <tr>
+                                    <th>Particulars</th>
+                                    <th class="text-right">Debit (₹)</th>
+                                    <th class="text-right">Credit (₹)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="trialBalanceBody"></tbody>
+                            <tfoot>
+                                <tr class="total-row">
+                                    <td>Totals</td>
+                                    <td id="trialDebitTotal" class="text-right">0.00</td>
+                                    <td id="trialCreditTotal" class="text-right">0.00</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Financial Statements -->
+            <section id="final-tab" class="tab-pane">
+                <div class="tabs-minimal">
+                    <button class="sub-tab-btn active" data-subtab="trading">Trading</button>
+                    <button class="sub-tab-btn" data-subtab="pl">Profit & Loss</button>
+                    <button class="sub-tab-btn" data-subtab="bs">Balance Sheet</button>
+                </div>
+
+                <div id="trading-view" class="sub-tab-pane active">
+                    <div class="card">
+                        <div class="statement-header">
+                            <h2>Trading Account</h2>
+                        </div>
+                        <div class="statement-grid">
+                            <div class="statement-side">
+                                <h4>Dr.</h4>
+                                <table class="statement-table" id="tradingDebitTable"></table>
+                            </div>
+                            <div class="statement-side">
+                                <h4>Cr.</h4>
+                                <table class="statement-table" id="tradingCreditTable"></table>
+                            </div>
+                        </div>
+                        <div id="tradingSummary" class="report-summary"></div>
+                    </div>
+                </div>
+
+                <div id="pl-view" class="sub-tab-pane">
+                    <div class="card">
+                        <div class="statement-header">
+                            <h2>Profit & Loss Account</h2>
+                        </div>
+                        <div class="statement-grid">
+                            <div class="statement-side">
+                                <h4>Dr.</h4>
+                                <table class="statement-table" id="plDebitTable"></table>
+                            </div>
+                            <div class="statement-side">
+                                <h4>Cr.</h4>
+                                <table class="statement-table" id="plCreditTable"></table>
+                            </div>
+                        </div>
+                        <div id="netProfitMsg" class="report-summary"></div>
+                    </div>
+                </div>
+
+                <div id="bs-view" class="sub-tab-pane">
+                    <div class="card">
+                        <div class="statement-header">
+                            <h2>Balance Sheet</h2>
+                        </div>
+                        <div class="statement-grid">
+                            <div class="statement-side">
+                                <h4>Equity & Liabilities</h4>
+                                <table class="statement-table" id="liabilitiesTable"></table>
+                            </div>
+                            <div class="statement-side">
+                                <h4>Assets</h4>
+                                <table class="statement-table" id="assetsTable"></table>
+                            </div>
+                        </div>
+                        <div id="bsStatus" class="report-summary"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Preferences -->
+            <section id="settings-tab" class="tab-pane">
+                <div class="card">
+                    <h3>Managed Profile</h3>
+                    <div class="form-group" style="margin-top: 2rem;">
+                        <label>Active Enterprise</label>
+                        <input type="text" id="settingsCompanyName" readonly>
+                    </div>
+                    <div style="display:flex; flex-direction: column; gap: 1rem;">
+                        <button id="resetData" class="btn-secondary">Reset Company Vouchers</button>
+                        <button id="delCurrentCompanyBtn" class="btn-primary" style="background: var(--danger);">Delete
+                            Enterprise Profile</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="notificationContainer" class="notification-container"></div>
+
+    <script src="storage.js"></script>
+    <script src="engine.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
